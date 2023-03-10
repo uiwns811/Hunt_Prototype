@@ -1,0 +1,15 @@
+.vs/
+Hunt_Prototype.sln
+Binaries/
+Build/
+Intermediate/
+Saved/
+*_BuiltData.uasset
+DerivedDataCache/
+
+#########
+#Asset Files#
+#########
+
+Content/ParagonKwang/
+Content/StarterContent/
