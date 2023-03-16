@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Hunt_Prototype.h"
 #include "Animation/AnimInstance.h"
 #include "MyAnimInstance.generated.h"
 

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Hunt_Prototype.h"
 #include "GameFramework/GameModeBase.h"
 #include "Hunt_PrototypeGameModeBase.generated.h"
 
@@ -16,4 +16,6 @@ class HUNT_PROTOTYPE_API AHunt_PrototypeGameModeBase : public AGameModeBase
 	
 public:
 	AHunt_PrototypeGameModeBase();
+
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };
