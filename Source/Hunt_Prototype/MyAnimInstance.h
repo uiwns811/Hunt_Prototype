@@ -14,13 +14,12 @@ class HUNT_PROTOTYPE_API UMyAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 	
-public:
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true));
+	float CurrentPawnSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		float Speed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		float Direction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = ture));
+	bool IsInAir;
 
 public:
 	UMyAnimInstance();

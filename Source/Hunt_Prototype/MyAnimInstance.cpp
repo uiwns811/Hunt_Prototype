@@ -5,7 +5,8 @@
 
 UMyAnimInstance::UMyAnimInstance()
 {
-	//Speed = 0.0f;
+	CurrentPawnSpeed = 0.0f;
+	IsInAir = false;
 }
 
 void UMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
@@ -13,10 +14,12 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	Super::NativeUpdateAnimation(DeltaTime);
 
 	APawn* Pawn = TryGetPawnOwner();
-	if (::IsValid(Pawn))
-	{
-		Speed = Pawn->GetVelocity().Size();
+	if (::IsValid(Pawn)) {
+		CurrentPawnSpeed = Pawn->GetVelocity().Size();
+
+		auto Character = Cast<ACharacter>(Pawn);
+		if (Character) {
+			IsInAir = Character->GetMovementComponent()->IsFalling();
+		}
 	}
-	else return;
-	Direction = CalculateDirection(Pawn->GetVelocity(), Pawn->GetActorRotation());
 }
