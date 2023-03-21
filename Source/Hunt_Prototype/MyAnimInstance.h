@@ -6,6 +6,9 @@
 #include "Animation/AnimInstance.h"
 #include "MyAnimInstance.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnNextAttackCheckDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnAttackHitCheckDelegate);
+
 /**
  * 
  */
@@ -21,8 +24,26 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = ture));
 	bool IsInAir;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true));
+	UAnimMontage* AttackMontage;
+
 public:
 	UMyAnimInstance();
 
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
+
+	void PlayAttackMontage();
+	void JumpToAttackMontageSection(int32 NewSection);
+
+public:
+	FOnNextAttackCheckDelegate OnNextAttackCheck;
+	FOnAttackHitCheckDelegate OnAttackHitCheck;
+
+private:
+	UFUNCTION()
+		void AnimNotify_AttackHitCheck();
+	UFUNCTION()
+		void AnimNotify_NextAttackCheck();
+
+	FName GetAttackMontageSectionName(int32 Section);
 };

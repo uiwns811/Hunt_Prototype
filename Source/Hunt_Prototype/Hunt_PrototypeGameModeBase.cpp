@@ -14,7 +14,7 @@ AHunt_PrototypeGameModeBase::AHunt_PrototypeGameModeBase()
 
 void AHunt_PrototypeGameModeBase::PostLogin(APlayerController* NewPlayer)
 {
-	ABLOG(Warning, TEXT("PostLogin Begin"));
+	HUNT_LOG(Warning, TEXT("PostLogin Begin"));
 	Super::PostLogin(NewPlayer);
-	ABLOG(Warning, TEXT("PostLogin End"));
+	HUNT_LOG(Warning, TEXT("PostLogin End"));
 }

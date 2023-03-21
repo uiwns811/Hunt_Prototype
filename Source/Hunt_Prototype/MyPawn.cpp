@@ -13,46 +13,46 @@ AMyPawn::AMyPawn()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CAPSULE"));
-	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MESH"));
-	Movement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MOVEMENT"));
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
+	//Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CAPSULE"));
+	//Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MESH"));
+	//Movement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MOVEMENT"));
+	//SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
+	//Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 
-	RootComponent = Capsule;
-	Mesh->SetupAttachment(Capsule);
-	SpringArm->SetupAttachment(Capsule);
-	Camera->SetupAttachment(SpringArm);
+	//RootComponent = Capsule;
+	//Mesh->SetupAttachment(Capsule);
+	//SpringArm->SetupAttachment(Capsule);
+	//Camera->SetupAttachment(SpringArm);
 
-	Capsule->SetCapsuleHalfHeight(88.0f);
-	Capsule->SetCapsuleRadius(34.0f);
+	//Capsule->SetCapsuleHalfHeight(88.0f);
+	//Capsule->SetCapsuleRadius(34.0f);
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_KWANG_GDC(TEXT("SkeletalMesh'/Game/ParagonKwang/Characters/Heroes/Kwang/Meshes/Kwang_GDC.Kwang_GDC'"));
-	if (SK_KWANG_GDC.Succeeded())
-	{
-		Mesh->SetSkeletalMesh(SK_KWANG_GDC.Object);
-	}
+	//static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_KWANG_GDC(TEXT("SkeletalMesh'/Game/ParagonKwang/Characters/Heroes/Kwang/Meshes/Kwang_GDC.Kwang_GDC'"));
+	//if (SK_KWANG_GDC.Succeeded())
+	//{
+	//	Mesh->SetSkeletalMesh(SK_KWANG_GDC.Object);
+	//}
 
-	Mesh->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -150.0f), FRotator(0.0f, -90.0f, 0.0f));
+	//Mesh->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -150.0f), FRotator(0.0f, -90.0f, 0.0f));
 
-	SpringArm->TargetArmLength = 400.0f;
-	//SpringArm->SocketOffset = FVector(0f, 0.0f, 200.0f);
+	//SpringArm->TargetArmLength = 400.0f;
+	////SpringArm->SocketOffset = FVector(0f, 0.0f, 200.0f);
 
-	SpringArm->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
-	
-		/*SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight + 70.0f));
-	SpringArm->bUsePawnControlRotation = true;
+	//SpringArm->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
+	//
+	//	/*SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight + 70.0f));
+	//SpringArm->bUsePawnControlRotation = true;
 
-	Camera->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));*/
+	//Camera->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));*/
 
-	Mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	//Mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
-	// Animation
-	static ConstructorHelpers::FClassFinder<UAnimInstance> ANIM_BP_KWANG(TEXT("AnimBlueprint'/Game/Animation/ABP_MyCharacter.ABP_MyCharacter_C'"));
-	if (ANIM_BP_KWANG.Succeeded())
-	{
-		Mesh->SetAnimInstanceClass(ANIM_BP_KWANG.Class);
-	}
+	//// Animation
+	//static ConstructorHelpers::FClassFinder<UAnimInstance> ANIM_BP_KWANG(TEXT("AnimBlueprint'/Game/Animation/ABP_MyCharacter.ABP_MyCharacter_C'"));
+	//if (ANIM_BP_KWANG.Succeeded())
+	//{
+	//	Mesh->SetAnimInstanceClass(ANIM_BP_KWANG.Class);
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -71,12 +71,12 @@ void AMyPawn::Tick(float DeltaTime)
 void AMyPawn::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	ABLOG_S(Warning);
+	HUNT_LOG_S(Warning);
 }
 
 void AMyPawn::PossessedBy(AController* NewController)
 {
-	ABLOG_S(Warning);
+	HUNT_LOG_S(Warning);
 	Super::PossessedBy(NewController);
 }
 
@@ -94,13 +94,13 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AMyPawn::MoveForward(float AxisValue)
 {
 	AddMovementInput(GetActorForwardVector(), AxisValue);
-	ABLOG_S(Warning);
+	HUNT_LOG_S(Warning);
 }
 
 void AMyPawn::MoveRight(float AxisValue)
 {
 	AddMovementInput(GetActorRightVector(), AxisValue);
-	ABLOG_S(Warning);
+	HUNT_LOG_S(Warning);
 }
 
 void AMyPawn::Turn(float AxisValue)

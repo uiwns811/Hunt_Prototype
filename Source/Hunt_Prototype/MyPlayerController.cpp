@@ -6,11 +6,11 @@
 void AMyPlayerController::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	ABLOG_S(Warning);
+	HUNT_LOG_S(Warning);
 }
 
 void AMyPlayerController::OnPossess(APawn* aPawn)
 {
-	ABLOG_S(Warning);
+	HUNT_LOG_S(Warning);
 	Super::OnPossess(aPawn);
 }

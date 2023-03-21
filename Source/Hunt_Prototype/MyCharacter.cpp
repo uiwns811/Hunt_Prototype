@@ -2,11 +2,7 @@
 
 
 #include "MyCharacter.h"
-
-#include "Kismet/KismetMathLibrary.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "MyAnimInstance.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -38,10 +34,15 @@ AMyCharacter::AMyCharacter()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
 	// Animation
-	static ConstructorHelpers::FClassFinder<UAnimInstance> ANIM_BP_KWANG(TEXT("AnimBlueprint'/Game/Animation/ABP_MyCharacter.ABP_MyCharacter_C'"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> ANIM_BP_KWANG(TEXT("/Game/Animation/ABP_MyCharacter.ABP_MyCharacter_C"));
 	if (ANIM_BP_KWANG.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(ANIM_BP_KWANG.Class);
+		HUNT_LOG(Warning, TEXT("ABP_LOAD"));
+	}
+	else
+	{
+		HUNT_LOG(Warning, TEXT("ABP_NOT_LOAD"));
 	}
 
 	SetControlMode(EControlMode::GTA);
@@ -49,16 +50,36 @@ AMyCharacter::AMyCharacter()
 	ArmLengthSpeed = 3.0f;
 	ArmRotationSpeed = 10.0f;
 	GetCharacterMovement()->JumpZVelocity = 800.0f;
+
+	IsAttacking = false;
+	MaxCombo = 4;
+	AttackEndComboState();
 }
 
 // Called when the game starts or when spawned
 void AMyCharacter::BeginPlay()
 {
-	Super::BeginPlay();
+	Super::BeginPlay();	
+}
 
-	ABLOG_S(Warning);
-	ABLOG(Warning, TEXT("Actor Name : %s, Location : (%.3f, %.3f, %.3f)"), *GetName(), GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
-	
+void AMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	MyAnim = Cast<UMyAnimInstance>(GetMesh()->GetAnimInstance());
+	HUNT_CHECK(nullptr != MyAnim);
+
+	MyAnim->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackMontageEnded);
+
+	MyAnim->OnNextAttackCheck.AddLambda([this]() -> void {
+		HUNT_LOG(Warning, TEXT("OnNextAttackCheck"));
+		CanNextCombo = false;
+
+		if (IsComboInputOn) {
+			AttackStartComboState();
+			MyAnim->JumpToAttackMontageSection(CurrentCombo);
+		}
+	});
 }
 
 void AMyCharacter::SetControlMode(EControlMode NewControlMode)
@@ -138,6 +159,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	
 	PlayerInputComponent->BindAction(TEXT("ViewChange"), EInputEvent::IE_Pressed, this, &AMyCharacter::ViewChange);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction(TEXT("Attack"), EInputEvent::IE_Pressed, this, &AMyCharacter::Attack);
 
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &AMyCharacter::MoveForward);
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &AMyCharacter::MoveRight);
@@ -221,4 +243,44 @@ void AMyCharacter::ViewChange()
 		SetControlMode(EControlMode::GTA);
 		break;
 	}
+}
+
+void AMyCharacter::Attack()
+{
+	if (IsAttacking) {
+		HUNT_CHECK(FMath::IsWithinInclusive<int32>(CurrentCombo, 1, MaxCombo));
+		if (CanNextCombo) {
+			IsComboInputOn = true;
+		}
+	}
+	else {
+		HUNT_CHECK(CurrentCombo == 0);
+		AttackStartComboState();
+		MyAnim->PlayAttackMontage();
+		MyAnim->JumpToAttackMontageSection(CurrentCombo);
+		IsAttacking = true;
+	}
+}
+
+void AMyCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	HUNT_CHECK(IsAttacking);
+	HUNT_CHECK(CurrentCombo > 0);
+	IsAttacking = false;
+	AttackEndComboState();
+}
+
+void AMyCharacter::AttackStartComboState()
+{
+	CanNextCombo = true;
+	IsComboInputOn = false;
+	HUNT_CHECK(FMath::IsWithinInclusive<int32>(CurrentCombo, 0, MaxCombo - 1));
+	CurrentCombo = FMath::Clamp<int32>(CurrentCombo + 1, 1, MaxCombo);
+}
+
+void AMyCharacter::AttackEndComboState()
+{
+	IsComboInputOn = false;
+	CanNextCombo = false;
+	CurrentCombo = 0;
 }
