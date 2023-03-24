@@ -3,6 +3,7 @@
 
 #include "MyCharacter.h"
 #include "MyAnimInstance.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -52,8 +53,13 @@ AMyCharacter::AMyCharacter()
 	GetCharacterMovement()->JumpZVelocity = 800.0f;
 
 	IsAttacking = false;
-	MaxCombo = 4;
+	MaxCombo = 5;
 	AttackEndComboState();
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("MyCharacter"));
+
+	AttackRange = 200.0f;
+	AttackRadius = 50.0f;
 }
 
 // Called when the game starts or when spawned
@@ -72,7 +78,6 @@ void AMyCharacter::PostInitializeComponents()
 	MyAnim->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackMontageEnded);
 
 	MyAnim->OnNextAttackCheck.AddLambda([this]() -> void {
-		HUNT_LOG(Warning, TEXT("OnNextAttackCheck"));
 		CanNextCombo = false;
 
 		if (IsComboInputOn) {
@@ -80,6 +85,8 @@ void AMyCharacter::PostInitializeComponents()
 			MyAnim->JumpToAttackMontageSection(CurrentCombo);
 		}
 	});
+
+	MyAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
 }
 
 void AMyCharacter::SetControlMode(EControlMode NewControlMode)
@@ -170,14 +177,9 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::MoveForward(float AxisValue)
 {
-	// ±×³É ¾ÕµÚ·Î ¿òÁ÷ÀÌ±â
-	// AddMovementInput(GetActorForwardVector(), AxisValue);
-
-
 	switch (CurrentControlMode) {
 	case EControlMode::GTA:
 	{
-		// Ä«¸Þ¶ó°¡ ¹Ù¶óº¸´Â ¹æÇâ´ë·Î ¿òÁ÷ÀÌ±â
 		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), AxisValue);
 		break;
 	}
@@ -191,13 +193,10 @@ void AMyCharacter::MoveForward(float AxisValue)
 
 void AMyCharacter::MoveRight(float AxisValue)
 {
-	// ±×³É ¾ÕµÚ·Î ¿òÁ÷ÀÌ±â
-	// AddMovementInput(GetActorRightVector(), AxisValue);
-
 	switch (CurrentControlMode) {
 	case EControlMode::GTA:
 	{
-		// Ä«¸Þ¶ó°¡ ¹Ù¶óº¸´Â ¹æÇâ´ë·Î ¿òÁ÷ÀÌ±â
+		// Ä«ï¿½Þ¶ï¿½ ï¿½Ù¶óº¸´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì±ï¿½
 		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), AxisValue);
 		break;
 	}
@@ -283,4 +282,59 @@ void AMyCharacter::AttackEndComboState()
 	IsComboInputOn = false;
 	CanNextCombo = false;
 	CurrentCombo = 0;
+}
+
+void AMyCharacter::AttackCheck()
+{
+	FHitResult HitResult;
+	FCollisionQueryParams Params(NAME_None, false, this);
+	bool bResult = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		GetActorLocation(),
+		GetActorLocation() + GetActorForwardVector() * AttackRange,
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel2,
+		FCollisionShape::MakeSphere(AttackRadius),
+		Params);
+
+#if ENABLE_DRAW_DEBUG
+	FVector TraceVec = GetActorForwardVector() * AttackRange;
+	FVector Center = GetActorLocation() + TraceVec * 0.5f;
+	float HalfHeight = AttackRange * 0.5f + AttackRadius;
+	FQuat CapsuleRot = FRotationMatrix::MakeFromZ(TraceVec).ToQuat();
+	FColor DrawColor = bResult ? FColor::Green : FColor::Red;
+	float DebugLifeTime = 5.0f;
+
+	DrawDebugCapsule(GetWorld(),
+		Center,
+		HalfHeight,
+		AttackRadius,
+		CapsuleRot,
+		DrawColor,
+		false,
+		DebugLifeTime);
+
+#endif
+	if (bResult) {
+		if (::IsValid(HitResult.GetActor())) {
+			HUNT_LOG(Warning, TEXT("Hit Actor Name : %s"), *HitResult.GetActor()->GetName());
+
+			FDamageEvent DamageEvent;
+			HitResult.GetActor()->TakeDamage(50.0f, DamageEvent, GetController(), this);
+		}
+	}
+}
+
+float AMyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	HUNT_LOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
+
+	if (FinalDamage > 0.0f) {
+		MyAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+	}
+
+	return FinalDamage;
 }
