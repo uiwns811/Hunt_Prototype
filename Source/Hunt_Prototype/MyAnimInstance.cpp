@@ -11,7 +11,7 @@ UMyAnimInstance::UMyAnimInstance()
 	IsInAir = false;
 	IsDead = false;
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT("AnimMontage'/Game/Animation/AMtg_MyCharacter.AMtg_MyCharacter'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT("AnimMontage'/Game/Animation/RTG_AMtg_MyCharacter.RTG_AMtg_MyCharacter'"));
 	if (ATTACK_MONTAGE.Succeeded())
 	{
 		AttackMontage = ATTACK_MONTAGE.Object;

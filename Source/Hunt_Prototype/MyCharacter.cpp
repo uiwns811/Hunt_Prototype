@@ -24,10 +24,10 @@ AMyCharacter::AMyCharacter()
 	*/
 	Camera->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_KWANG_GDC(TEXT("SkeletalMesh'/Game/ParagonKwang/Characters/Heroes/Kwang/Meshes/Kwang_GDC.Kwang_GDC'"));
-	if (SK_KWANG_GDC.Succeeded())
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SK_PLAYER_GDC(TEXT("SkeletalMesh'/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard'"));
+	if (SK_PLAYER_GDC.Succeeded())
 	{
-		GetMesh()->SetSkeletalMesh(SK_KWANG_GDC.Object);
+		GetMesh()->SetSkeletalMesh(SK_PLAYER_GDC.Object);
 	}
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -90.0f), FRotator(0.0f, -90.0f, 0.0f));
@@ -35,10 +35,10 @@ AMyCharacter::AMyCharacter()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
 	// Animation
-	static ConstructorHelpers::FClassFinder<UAnimInstance> ANIM_BP_KWANG(TEXT("/Game/Animation/ABP_MyCharacter.ABP_MyCharacter_C"));
-	if (ANIM_BP_KWANG.Succeeded())
+	static ConstructorHelpers::FClassFinder<UAnimInstance> ANIM_BP_CARDBOARD(TEXT("AnimBlueprint'/Game/Animation/RTG_ABP_MyCharacter.RTG_ABP_MyCharacter_C'"));
+	if (ANIM_BP_CARDBOARD.Succeeded())
 	{
-		GetMesh()->SetAnimInstanceClass(ANIM_BP_KWANG.Class);
+		GetMesh()->SetAnimInstanceClass(ANIM_BP_CARDBOARD.Class);
 		HUNT_LOG(Warning, TEXT("ABP_LOAD"));
 	}
 	else
