@@ -3,6 +3,7 @@
 
 #include "MyCharacter.h"
 #include "MyAnimInstance.h"
+#include "MyWeapon.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
@@ -45,6 +46,7 @@ AMyCharacter::AMyCharacter()
 	{
 		HUNT_LOG(Warning, TEXT("ABP_NOT_LOAD"));
 	}
+
 
 	SetControlMode(EControlMode::GTA);
 
@@ -337,4 +339,21 @@ float AMyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	}
 
 	return FinalDamage;
+}
+
+bool AMyCharacter::CanSetWeapon()
+{
+	return (nullptr == CurrentWeapon);
+}
+
+void AMyCharacter::SetWeapon(AMyWeapon* NewWeapon)
+{
+	HUNT_CHECK(nullptr != NewWeapon && nullptr == CurrentWeapon);
+
+	FName WeaponSocket(TEXT("hand_rSocket"));
+	if (nullptr != NewWeapon) {
+		NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+		NewWeapon->SetOwner(this);
+		CurrentWeapon = NewWeapon;
+	}
 }

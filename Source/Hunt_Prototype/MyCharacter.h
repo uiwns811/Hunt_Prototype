@@ -19,6 +19,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 		UCameraComponent* Camera;
 
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		class AMyWeapon* CurrentWeapon;
+
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 		bool IsAttacking;
@@ -76,6 +79,9 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	bool CanSetWeapon();
+	void SetWeapon(class AMyWeapon* NewWeapon);
 
 
 private:
