@@ -4,7 +4,10 @@
 #include "MyCharacter.h"
 #include "MyAnimInstance.h"
 #include "MyWeapon.h"
+#include "MyCharacterStatComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Components/WidgetComponent.h"
+#include "MyCharacterWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -14,9 +17,12 @@ AMyCharacter::AMyCharacter()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
+	CharacterStat = CreateDefaultSubobject<UMyCharacterStatComponent>(TEXT("CHARACTERSSTAT"));
+	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBARWIDGET"));
 
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
+	HPBarWidget->SetupAttachment(GetMesh());
 
 	SpringArm->TargetArmLength = 600.0f;
 	SpringArm->SocketOffset = FVector(-15.0f, 0.0f, 200.0f);
@@ -62,12 +68,25 @@ AMyCharacter::AMyCharacter()
 
 	AttackRange = 200.0f;
 	AttackRadius = 50.0f;
+
+	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	static ConstructorHelpers::FClassFinder<UUserWidget> UI_HUD(TEXT("WidgetBlueprint'/Game/UI/UI_HPBar.UI_HPBar_C'"));
+	if (UI_HUD.Succeeded()) {
+		HPBarWidget->SetWidgetClass(UI_HUD.Class);
+		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
+	}
 }
 
 // Called when the game starts or when spawned
 void AMyCharacter::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+
+	auto CharacterWidget = Cast<UMyCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	if (nullptr != CharacterWidget) {
+		CharacterWidget->BindCharacterStat(CharacterStat);
+	}
 }
 
 void AMyCharacter::PostInitializeComponents()
@@ -89,6 +108,12 @@ void AMyCharacter::PostInitializeComponents()
 	});
 
 	MyAnim->OnAttackHitCheck.AddUObject(this, &AMyCharacter::AttackCheck);
+
+	CharacterStat->OnHPIsZero.AddLambda([this]()->void {
+		HUNT_LOG(Warning, TEXT("OnHPIsZero"));
+		MyAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+		});
 }
 
 void AMyCharacter::SetControlMode(EControlMode NewControlMode)
@@ -322,7 +347,7 @@ void AMyCharacter::AttackCheck()
 			HUNT_LOG(Warning, TEXT("Hit Actor Name : %s"), *HitResult.GetActor()->GetName());
 
 			FDamageEvent DamageEvent;
-			HitResult.GetActor()->TakeDamage(50.0f, DamageEvent, GetController(), this);
+			HitResult.GetActor()->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
 		}
 	}
 }
@@ -333,10 +358,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 
 	HUNT_LOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
 
-	if (FinalDamage > 0.0f) {
-		MyAnim->SetDeadAnim();
-		SetActorEnableCollision(false);
-	}
+	CharacterStat->SetDamage(FinalDamage);
 
 	return FinalDamage;
 }

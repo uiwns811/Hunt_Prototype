@@ -22,6 +22,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 		class AMyWeapon* CurrentWeapon;
 
+	UPROPERTY(VisibleAnywhere, Category = Stat)
+		class UMyCharacterStatComponent* CharacterStat;
+
+	UPROPERTY(VisibleAnywhere, Category = UI)
+		class UWidgetComponent* HPBarWidget;
+
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 		bool IsAttacking;
