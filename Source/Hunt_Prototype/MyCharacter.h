@@ -7,6 +7,8 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "MyCharacter.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+
 UCLASS()
 class HUNT_PROTOTYPE_API AMyCharacter : public ACharacter
 {
@@ -27,6 +29,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = UI)
 		class UWidgetComponent* HPBarWidget;
+
+	FOnAttackEndDelegate OnAttackEnd;
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
@@ -63,7 +67,8 @@ protected:
 
 	enum class EControlMode {
 		GTA,
-		DIABLO
+		DIABLO,
+		NPC
 	};
 
 	void SetControlMode(EControlMode NewControlMode);
@@ -79,16 +84,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	virtual void PostInitializeComponents() override;
-
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	virtual void PossessedBy(AController* NewController) override;
 
 	bool CanSetWeapon();
 	void SetWeapon(class AMyWeapon* NewWeapon);
 
+	void Attack();
 
 private:
 	void MoveForward(float AxisValue);
@@ -97,7 +101,6 @@ private:
 	void LookUp(float AxisValue);
 
 	void ViewChange();
-	void Attack();
 
 	UFUNCTION()
 		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
