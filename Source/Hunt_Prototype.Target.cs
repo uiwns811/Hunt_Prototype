@@ -9,6 +9,6 @@ public class Hunt_PrototypeTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "Hunt_Prototype" } );
+		ExtraModuleNames.AddRange( new string[] { "Hunt_Prototype", "ArenaBattleSetting" } );
 	}
 }

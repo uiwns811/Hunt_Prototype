@@ -5,6 +5,7 @@
 #include "Hunt_Prototype.h"
 #include "Engine/DataTable.h"
 #include "Engine/GameInstance.h"
+#include "Engine/StreamableManager.h"
 #include "MyGameInstance.generated.h"
 
 USTRUCT(BlueprintType)
@@ -44,6 +45,8 @@ public:
 
 	virtual void Init() override;
 	FMyCharacterData* GetMyCharacterData(int32 Level);
+
+	FStreamableManager StreamableManager;
 
 private:
 	UPROPERTY()

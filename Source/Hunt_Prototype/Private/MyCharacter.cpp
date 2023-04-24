@@ -9,6 +9,8 @@
 #include "Components/WidgetComponent.h"
 #include "MyCharacterWidget.h"
 #include "MyAIController.h"
+#include "ABCharacterSetting.h"
+#include "MyGameInstance.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -80,6 +82,13 @@ AMyCharacter::AMyCharacter()
 
 	AIControllerClass = AMyAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	//auto DefaultSetting = GetDefault<UABCharacterSetting>();
+	//if (DefaultSetting->CharacterAssets.Num() > 0) {
+	//	for (auto CharacterAsset : DefaultSetting->CharacterAssets) {
+	//		HUNT_LOG(Warning, TEXT("Character Asset : %s"), *CharacterAsset.ToString());
+	//	}
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -87,9 +96,23 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+
 	auto CharacterWidget = Cast<UMyCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 	if (nullptr != CharacterWidget) {
 		CharacterWidget->BindCharacterStat(CharacterStat);
+	}
+
+	if (!IsPlayerControlled())
+	{
+		auto DefaultSetting = GetDefault<UABCharacterSetting>();
+		int32 RandIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
+		CharacterAssetToLoad = DefaultSetting->CharacterAssets[RandIndex];
+
+		auto MyGameInstance = Cast<UMyGameInstance>(GetGameInstance());
+		if (nullptr != MyGameInstance)
+		{
+			AssetStreamingHandle = MyGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, FStreamableDelegate::CreateUObject(this, &AMyCharacter::OnAssetLoadCompleted));
+		}
 	}
 }
 
@@ -404,5 +427,14 @@ void AMyCharacter::PossessedBy(AController* NewController)
 	else {
 		SetControlMode(EControlMode::NPC);
 		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	}
+}
+
+void AMyCharacter::OnAssetLoadCompleted()
+{
+	USkeletalMesh* AssetLoaded = Cast<USkeletalMesh>(AssetStreamingHandle->GetLoadedAsset());
+	AssetStreamingHandle.Reset();
+	if (nullptr != AssetLoaded) {
+		GetMesh()->SetSkeletalMesh(AssetLoaded);
 	}
 }
