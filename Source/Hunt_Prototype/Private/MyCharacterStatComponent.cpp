@@ -62,15 +62,20 @@ void UMyCharacterStatComponent::SetHP(float NewHP)
 	}
 }
 
-float UMyCharacterStatComponent::GetAttack()
+float UMyCharacterStatComponent::GetAttack() const
 {
 	HUNT_CHECK(nullptr != CurrentStatData, 0.0f);
 	return CurrentStatData->Attack;
 }
 
-float UMyCharacterStatComponent::GetHPRatio()
+float UMyCharacterStatComponent::GetHPRatio() const
 {
 	HUNT_CHECK(nullptr != CurrentStatData, 0.0f);
 	
 	return (CurrentStatData->MaxHP < KINDA_SMALL_NUMBER) ? 0.0f : (CurrentHP / CurrentStatData->MaxHP);
+}
+
+int32 UMyCharacterStatComponent::GetDropExp() const
+{
+	return CurrentStatData->DropExp;
 }

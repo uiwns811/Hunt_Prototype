@@ -4,6 +4,8 @@
 #include "MySection.h"
 #include "MyCharacter.h"
 #include "MyItemBox.h"
+#include "MyPlayerController.h"
+#include "Hunt_PrototypeGameModeBase.h"
 
 // Sets default values
 AMySection::AMySection()
@@ -172,5 +174,24 @@ void AMySection::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedCompon
 
 void AMySection::OnNPCSpawn()
 {
-	GetWorld()->SpawnActor<AMyCharacter>(GetActorLocation() + FVector::UpVector * 88.0f, FRotator::ZeroRotator);
+	GetWorld()->GetTimerManager().ClearTimer(SpawnNPCTimerHandle);
+	auto KeyNPC = GetWorld()->SpawnActor<AMyCharacter>(GetActorLocation() + FVector::UpVector * 88.0f, FRotator::ZeroRotator);
+	if (nullptr != KeyNPC) {
+		KeyNPC->OnDestroyed.AddDynamic(this, &AMySection::OnKeyNPCDestroyed);
+	}
+}
+
+void AMySection::OnKeyNPCDestroyed(AActor* DestroyedActor)
+{
+	auto MyCharacter = Cast<AMyCharacter>(DestroyedActor);
+	HUNT_CHECK(nullptr != MyCharacter);
+
+	auto MyPlayerController = Cast<AMyPlayerController>(MyCharacter->LastHitBy);
+	HUNT_CHECK(nullptr != MyPlayerController);
+
+	auto MyGameBase = Cast<AHunt_PrototypeGameModeBase>(GetWorld()->GetAuthGameMode());
+	HUNT_CHECK(nullptr != MyGameBase);
+	MyGameBase->AddScore(MyPlayerController);
+
+	SetState(ESectionState::COMPLETE);
 }

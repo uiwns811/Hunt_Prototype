@@ -17,5 +17,11 @@ class HUNT_PROTOTYPE_API AHunt_PrototypeGameModeBase : public AGameModeBase
 public:
 	AHunt_PrototypeGameModeBase();
 
+	virtual void PostInitializeComponents() override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	void AddScore(class AMyPlayerController* ScoredPlayer);
+
+private:
+	UPROPERTY()
+		class AMyGameState* MyGameState;
 };

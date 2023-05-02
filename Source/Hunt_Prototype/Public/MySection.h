@@ -65,6 +65,9 @@ private:
 
 	void OnNPCSpawn();
 
+	UFUNCTION()
+		void OnKeyNPCDestroyed(AActor* DestroyedActor);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

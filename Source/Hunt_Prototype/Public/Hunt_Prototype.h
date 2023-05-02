@@ -4,6 +4,15 @@
 
 #include "EngineMinimal.h"
 
+UENUM(BlueprintType)
+enum class ECharacterState : uint8
+{
+	PREINIT,
+	LOADING,
+	READY,
+	DEAD
+};
+
 DECLARE_LOG_CATEGORY_EXTERN(HUNT, Log, All);
 
 #define HUNT_LOG_CALLINFO (FString(__FUNCTION__) + TEXT("(") + FString::FromInt(__LINE__) + TEXT(")"))
