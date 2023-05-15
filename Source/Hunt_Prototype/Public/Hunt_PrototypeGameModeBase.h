@@ -21,6 +21,8 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	void AddScore(class AMyPlayerController* ScoredPlayer);
 
+	int32 GetScore() const;
+
 private:
 	UPROPERTY()
 		class AMyGameState* MyGameState;

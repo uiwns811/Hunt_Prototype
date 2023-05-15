@@ -42,3 +42,8 @@ void AHunt_PrototypeGameModeBase::AddScore(AMyPlayerController* ScoredPlayer)
 	}
 	MyGameState->AddGameScore();
 }
+
+int32 AHunt_PrototypeGameModeBase::GetScore() const
+{
+	return MyGameState->GetTotalGameScore();
+}

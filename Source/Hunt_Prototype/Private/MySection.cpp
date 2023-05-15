@@ -180,7 +180,7 @@ void AMySection::OnNPCSpawn()
 		KeyNPC->OnDestroyed.AddDynamic(this, &AMySection::OnKeyNPCDestroyed);
 	}
 }
-
+  
 void AMySection::OnKeyNPCDestroyed(AActor* DestroyedActor)
 {
 	auto MyCharacter = Cast<AMyCharacter>(DestroyedActor);

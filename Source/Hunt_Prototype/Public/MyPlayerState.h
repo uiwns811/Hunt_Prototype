@@ -20,14 +20,18 @@ public:
 	AMyPlayerState();
 
 	int32 GetGameScore() const;
+	int32 GetGameHighScore() const;
 	int32 GetCharacterLevel() const;
 	float GetExpRatio() const;
 	bool AddExp(int32 IncomeExp);
 	void AddGameScore();
 
 	void InitPlayerData();
+	void SavePlayerData();
 
 	FOnPlayerStateChangedDelegate OnPlayerStateChanged;
+
+	FString SaveSlotName;
 
 protected:
 	UPROPERTY(Transient)
@@ -38,6 +42,9 @@ protected:
 	
 	UPROPERTY(Transient)
 		int32 Exp;
+
+	UPROPERTY(Transient)
+		int32 GameHighScore;
 
 private:
 	void SetCharacterLevel(int32 NewCharacterLevel);

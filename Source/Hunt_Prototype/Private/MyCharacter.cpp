@@ -14,6 +14,7 @@
 #include "MyPlayerController.h"
 #include "MyPlayerState.h"
 #include "MyHUDWidget.h"
+#include "Hunt_PrototypeGameModeBase.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -72,7 +73,7 @@ AMyCharacter::AMyCharacter()
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("MyCharacter"));
 
-	AttackRange = 200.0f;
+	AttackRange = 80.0f;
 	AttackRadius = 50.0f;
 
 	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
@@ -363,21 +364,23 @@ void AMyCharacter::AttackEndComboState()
 
 void AMyCharacter::AttackCheck()
 {
+	float FinalAttackRange = GetFinalAttackRange();
+
 	FHitResult HitResult;
 	FCollisionQueryParams Params(NAME_None, false, this);
 	bool bResult = GetWorld()->SweepSingleByChannel(
 		HitResult,
 		GetActorLocation(),
-		GetActorLocation() + GetActorForwardVector() * AttackRange,
+		GetActorLocation() + GetActorForwardVector() * FinalAttackRange,
 		FQuat::Identity,
 		ECollisionChannel::ECC_GameTraceChannel2,
 		FCollisionShape::MakeSphere(AttackRadius),
 		Params);
 
 #if ENABLE_DRAW_DEBUG
-	FVector TraceVec = GetActorForwardVector() * AttackRange;
+	FVector TraceVec = GetActorForwardVector() * FinalAttackRange;
 	FVector Center = GetActorLocation() + TraceVec * 0.5f;
-	float HalfHeight = AttackRange * 0.5f + AttackRadius;
+	float HalfHeight = FinalAttackRange * 0.5f + AttackRadius;
 	FQuat CapsuleRot = FRotationMatrix::MakeFromZ(TraceVec).ToQuat();
 	FColor DrawColor = bResult ? FColor::Green : FColor::Red;
 	float DebugLifeTime = 5.0f;
@@ -397,7 +400,7 @@ void AMyCharacter::AttackCheck()
 			HUNT_LOG(Warning, TEXT("Hit Actor Name : %s"), *HitResult.GetActor()->GetName());
 
 			FDamageEvent DamageEvent;
-			HitResult.GetActor()->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
+			HitResult.GetActor()->TakeDamage(GetFinalAttackDamage(), DamageEvent, GetController(), this);
 		}
 	}
 }
@@ -405,6 +408,18 @@ void AMyCharacter::AttackCheck()
 int32 AMyCharacter::GetExp() const
 {
 	return CharacterStat->GetDropExp();
+}
+
+float AMyCharacter::GetFinalAttackRange() const
+{
+	return (nullptr != CurrentWeapon) ? CurrentWeapon->GetAttackRange() : AttackRange;
+}
+
+float AMyCharacter::GetFinalAttackDamage() const
+{
+	float AttackDamage = (nullptr != CurrentWeapon) ? (CharacterStat->GetAttack() + CurrentWeapon->GetAttackDamage()) : CharacterStat->GetAttack();
+	float AttackModifier = (nullptr != CurrentWeapon) ? CurrentWeapon->GetAttackModifier() : 1.0f;
+	return AttackDamage * AttackModifier;
 }
 
 float AMyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
@@ -427,12 +442,18 @@ float AMyCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 
 bool AMyCharacter::CanSetWeapon()
 {
-	return (nullptr == CurrentWeapon);
+	return true;
 }
 
 void AMyCharacter::SetWeapon(AMyWeapon* NewWeapon)
 {
-	HUNT_CHECK(nullptr != NewWeapon && nullptr == CurrentWeapon);
+	HUNT_CHECK(nullptr != NewWeapon);
+
+	if (nullptr != CurrentWeapon) {
+		CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		CurrentWeapon->Destroy();
+		CurrentWeapon = nullptr;
+	}
 
 	FName WeaponSocket(TEXT("hand_rSocket"));
 	if (nullptr != NewWeapon) {
@@ -472,6 +493,15 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 			auto MyPlayerState = Cast<AMyPlayerState>(GetPlayerState());
 			HUNT_CHECK(nullptr != MyPlayerState);
 			CharacterStat->SetNewLevel(MyPlayerState->GetCharacterLevel());
+		}
+		else {
+			auto MyGameBase = Cast<AHunt_PrototypeGameModeBase>(GetWorld()->GetAuthGameMode());
+			HUNT_CHECK(nullptr != MyGameBase);
+			int32 TargetLevel = FMath::CeilToInt(((float)MyGameBase->GetScore() * 0.8f));
+
+			int32 FinalLevel = FMath::Clamp<int32>(TargetLevel, 1, 20);
+			HUNT_LOG(Warning, TEXT("New NPC Level : %d"), FinalLevel);
+			CharacterStat->SetNewLevel(FinalLevel);
 		}
 
 		SetActorHiddenInGame(true);

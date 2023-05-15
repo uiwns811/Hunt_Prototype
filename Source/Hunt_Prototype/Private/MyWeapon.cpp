@@ -19,13 +19,22 @@ AMyWeapon::AMyWeapon()
 	}
 	
 	Weapon->SetCollisionProfileName(TEXT("NoCollision"));
+
+	AttackRange = 150.0f;
+	AttackDamageMin = -2.5f;
+	AttackDamageMax = 10.0f;
+	AttackModifierMin = 0.85f;
+	AttackModifierMax = 1.25f;
 }
 
 // Called when the game starts or when spawned
 void AMyWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	AttackDamage = FMath::RandRange(AttackDamageMin, AttackDamageMax);
+	AttackModifier = FMath::RandRange(AttackModifierMin, AttackModifierMax);
+	HUNT_LOG(Warning, TEXT("Weapon Damage : %f, Modifier : %f"), AttackDamage, AttackModifier);
 }
 
 // Called every frame
@@ -35,3 +44,17 @@ void AMyWeapon::Tick(float DeltaTime)
 
 }
 
+float AMyWeapon::GetAttackRange() const
+{
+	return AttackRange;
+}
+
+float AMyWeapon::GetAttackDamage() const
+{
+	return AttackDamage;
+}
+
+float AMyWeapon::GetAttackModifier() const
+{
+	return AttackModifier;
+}
