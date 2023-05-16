@@ -6,6 +6,7 @@
 AMyGameState::AMyGameState()
 {
 	TotalGameScore = 0;
+	bGameCleared = false;
 }
 
 int32 AMyGameState::GetTotalGameScore() const
@@ -16,4 +17,14 @@ int32 AMyGameState::GetTotalGameScore() const
 void AMyGameState::AddGameScore()
 {
 	TotalGameScore++;
+}
+
+void AMyGameState::SetGameCleared()
+{
+	bGameCleared = true;
+}
+
+bool AMyGameState::IsGameCleared() const
+{
+	return bGameCleared;
 }

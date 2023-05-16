@@ -11,6 +11,7 @@ AMyPlayerState::AMyPlayerState()
 	GameScore = 0;
 	GameHighScore = 0;
 	Exp = 0;
+	CharacterIndex = 0;
 	SaveSlotName = TEXT("Player1");
 }
 
@@ -36,6 +37,7 @@ void AMyPlayerState::InitPlayerData()
 	GameScore = 0;
 	GameHighScore = MySaveGame->HighScore;
 	Exp = MySaveGame->Exp;
+	CharacterIndex = MySaveGame->CharacterIndex;
 
 	SavePlayerData();
 }
@@ -47,6 +49,7 @@ void AMyPlayerState::SavePlayerData()
 	NewPlayerData->Level = CharacterLevel;
 	NewPlayerData->Exp = Exp;
 	NewPlayerData->HighScore = GameHighScore;
+	NewPlayerData->CharacterIndex = CharacterIndex;
 
 	if (!UGameplayStatics::SaveGameToSlot(NewPlayerData, SaveSlotName, 0)) {
 		HUNT_LOG(Error, TEXT("SaveGame Error"));
@@ -103,4 +106,9 @@ void AMyPlayerState::SetCharacterLevel(int32 NewCharacterLevel)
 int32 AMyPlayerState::GetGameHighScore() const
 {
 	return GameHighScore;
+}
+
+int32 AMyPlayerState::GetCharacterIndex() const
+{
+	return CharacterIndex;
 }

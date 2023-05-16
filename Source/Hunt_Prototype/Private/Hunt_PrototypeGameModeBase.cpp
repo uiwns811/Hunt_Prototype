@@ -14,6 +14,8 @@ AHunt_PrototypeGameModeBase::AHunt_PrototypeGameModeBase()
 	PlayerControllerClass = AMyPlayerController::StaticClass();
 	PlayerStateClass = AMyPlayerState::StaticClass();
 	GameStateClass = AMyGameState::StaticClass();
+
+	ScoreToClear = 2;
 }
 
 void AHunt_PrototypeGameModeBase::PostInitializeComponents()
@@ -41,6 +43,21 @@ void AHunt_PrototypeGameModeBase::AddScore(AMyPlayerController* ScoredPlayer)
 		}
 	}
 	MyGameState->AddGameScore();
+	
+	if (GetScore() >= ScoreToClear) {
+		MyGameState->SetGameCleared();
+
+		for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It) {
+			(*It)->TurnOff();
+		}
+
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It) {
+			const auto MyPlayerController = Cast<AMyPlayerController>(It->Get());
+			if (nullptr != MyPlayerController) {
+				MyPlayerController->ShowResultUI();
+			}
+		}
+	}
 }
 
 int32 AHunt_PrototypeGameModeBase::GetScore() const

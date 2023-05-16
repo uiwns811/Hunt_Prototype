@@ -119,7 +119,11 @@ void AMyCharacter::BeginPlay()
 
 	auto DefaultSetting = GetDefault<UABCharacterSetting>();
 
-	if (bIsPlayer) AssetIndex = 4;
+	if (bIsPlayer) {
+		auto MyPlayerState = Cast<AMyPlayerState>(GetPlayerState());
+		HUNT_CHECK(nullptr != MyPlayerState);
+		AssetIndex = MyPlayerState->GetCharacterIndex();
+	}
 	else AssetIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
 	
 	CharacterAssetToLoad = DefaultSetting->CharacterAssets[AssetIndex];
@@ -545,7 +549,7 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 		else MyAIController->StopAI();
 
 		GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda([this]()->void {
-			if (bIsPlayer) MyPlayerController->RestartLevel();
+			if (bIsPlayer) MyPlayerController->ShowResultUI();
 			else Destroy();
 			}), DeadTimer, false);
 		break;

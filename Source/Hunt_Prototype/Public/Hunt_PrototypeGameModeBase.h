@@ -26,4 +26,7 @@ public:
 private:
 	UPROPERTY()
 		class AMyGameState* MyGameState;
+
+	UPROPERTY()
+		int32 ScoreToClear;
 };
